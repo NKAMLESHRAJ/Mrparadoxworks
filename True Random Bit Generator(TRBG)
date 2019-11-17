@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////
+
 //module test6_5(xor_out,ch_ena,clk,reset);
 module test(trng_out,ch_ena,clk,reset);
 input ch_ena,clk,reset;
-wire ch_ena,clk;
- 
+wire ch_ena,clk; 
 wire d,ts1_out,ts2_out,s;
 wire b1,b2;
 wire xor_out,out;
@@ -15,7 +15,7 @@ chaos1 c(s,ch_ena,z);
 ring1 r1(ts1_out,clk,s);
 ring2 r2(ts2_out,clk,s);
 xor(d,ts1_out,ts2_out);
-ph_det1 ph(z,d,clk); 
+ph_det1 ph(z,d,clk,reset); 
 //metastable  circuitm 
 latch l1(b1,b2,ts1_out,ts2_out,clk);
 xor (xor_out,b1,b2); 
@@ -25,6 +25,7 @@ lfsr l(trng_out,out,reset)
 endmodule
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //ring1
 module ring1(ts1_out,clk,s);
 input clk,s;
@@ -43,9 +44,9 @@ assign ts1_out=~a7;
 assign fg1=s?ts1_out:t1_out;
 endmodule
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//ring2//
+//ring2
 module ring2(ts2_out,clk,s);
 input clk,s;
 output ts2_out;
@@ -63,10 +64,10 @@ assign ts2_out=~a7;
 //mux2
 assign fg2=s?ts2_out:t2_out;
 endmodule
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-//phase detector
+//phase detector-DFF
 
 module ph_det1(q,d,clk);
 output  q;
@@ -74,20 +75,20 @@ input clk;
 input d;
 reg q;
 
-initial 
-begin 
-q=1'b0;
-end
-
-always @(posedge clk)
-begin
+always @(posedge clk,posedge reset)
+if(reset)
+q<=0;
+else
 q<=d;
 end   
 
 endmodule
+
 /////////////////////////////////////////////////////////////////////////
+
 //chaos circuit
 module chaos1(s,ch_ena,q);
+
 input q,ch_ena;
 output s;
 wire a4, a5;
@@ -95,51 +96,60 @@ wire a4, a5;
 assign a4=~ q;
 assign a5=~ a4;
 assign s=~(ch_ena & a5); 
+
 endmodule
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-//latch
-module latch(a1,a2,t1,t2,clk);
-input t1,t2,clk;
+
+//latch-active high
+
+module latch(a1,a2,t1,t2,en);
+input t1,t2,en;
 output a1,a2;
 reg a1,a2;
 
-initial
-begin
-a1<=1'b0;
-a2<=1'b1;
+always @ (en) begin
+if (reset)
+ a1<=1'b0;
+ a2<=1'b1;
 end
-
-always @(posedge clk)
+else
 begin
  a1<=~(t1 & a2);
  a2<=~(t2 & a1);
 end
+end
+
 endmodule
 
 ///////////////////////////////////////////////////////////////////////////////
-///////sipo
+
+//sipo-structural-stage 2
+
 //module sipo(a[0],a[1],a[2],a[3],xor_out,clk,reset);
 //input xor_out,clk,reset;
 //output [3:0]a;
 //reg [3:0]a;
 //
-//always @(posedge clk)
-//if(reset)
+//always @(posedge clk) 
 //begin
-//a<=1'b0;
-//end 
-//else
-//begin 
-//a[3]<=xor_out;
-//a[2]<=a[3];
-//a[1]<=a[2];
-//a[0]<=a[1];
+// if(reset)
+//   begin
+//    a<=1'b0;
+//   end 
+// else
+//   begin 
+//    a[3]<=xor_out;
+//    a[2]<=a[3];
+//    a[1]<=a[2];
+//   a[0]<=a[1];
+//  end
 //end
 //endmodule 
 
 /////////////////////////////////////////////////////////////////////////////////////
-//lfsr
+
+//lfsr-stage 2
 module lfsr (out, clk, rst);
 
   output reg [3:0] out;
