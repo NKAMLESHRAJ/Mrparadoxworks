@@ -26,8 +26,7 @@ ph_det1 ph(.q(z),.d(d),.clk(clk),.reset(reset));
 latch l1(.a1(b1),.a2(b2),.t1(ts1_out),.t2(ts2_out),.en(clk),.reset(reset));
 xor (xor_out,b1,b2); 
 //sipo sp(a1,a2,a3,a4,xor_out,clk,reset);
-//nand (out1,xor_out,trng_out);
-				//phase detector
+					//phase detector
 lfsr l(.out(trng_out),.clk(clk),.reset(reset),.in(xor_out));
 endmodule
 
